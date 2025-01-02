@@ -1,7 +1,7 @@
 [
 {
   "directory": "C:/projects/cProjects/ran-art/build",
-  "command": "C:\\msys64\\mingw64\\bin\\cc.exe  @CMakeFiles/ran-art.dir/includes_C.rsp -std=c2x -Wall -Wextra -Wpedantic -o CMakeFiles\\ran-art.dir\\src\\main.c.obj -c C:\\projects\\cProjects\\ran-art\\src\\main.c",
+  "command": "C:\\msys64\\mingw64\\bin\\cc.exe  @CMakeFiles/ran-art.dir/includes_C.rsp -g -std=c2x -Wall -Wextra -Wpedantic -o CMakeFiles\\ran-art.dir\\src\\main.c.obj -c C:\\projects\\cProjects\\ran-art\\src\\main.c",
   "file": "C:/projects/cProjects/ran-art/src/main.c",
   "output": "CMakeFiles/ran-art.dir/src/main.c.obj"
 }

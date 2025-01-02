@@ -6,5 +6,5 @@ C_DEFINES =
 
 C_INCLUDES = @CMakeFiles/ran-art.dir/includes_C.rsp
 
-C_FLAGS = -std=c2x -Wall -Wextra -Wpedantic
+C_FLAGS = -g -std=c2x -Wall -Wextra -Wpedantic
 
