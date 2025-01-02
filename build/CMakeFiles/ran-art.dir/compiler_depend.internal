@@ -216,6 +216,7 @@ CMakeFiles/ran-art.dir/src/main.c.obj
  C:/msys64/mingw64/lib/gcc/x86_64-w64-mingw32/14.2.0/include/xsaveoptintrin.h
  C:/msys64/mingw64/lib/gcc/x86_64-w64-mingw32/14.2.0/include/xsavesintrin.h
  C:/msys64/mingw64/lib/gcc/x86_64-w64-mingw32/14.2.0/include/xtestintrin.h
+ C:/projects/cProjects/ran-art/include/arena.h
  C:/projects/cProjects/ran-art/include/nob.h
  C:/projects/cProjects/ran-art/include/stb_image_write.h
 

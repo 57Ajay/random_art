@@ -1,7 +1,9 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #define NOB_IMPLEMENTATION
 #define NOB_STRIP_PREFIX
+#define ARENA_IMPLEMENTATION
 
+#include "arena.h"
 #include "nob.h"
 #include "stb_image_write.h"
 #include <stdint.h>
@@ -9,6 +11,113 @@
 
 #define WIDTH 800
 #define HEIGHT 600
+
+static Arena node_arena = {0};
+
+typedef enum { NK_X, NK_Y, NK_NUMBER, NK_ADD, NK_MULT, NK_TRIPLE } Node_Kind;
+
+typedef struct Node Node;
+
+typedef struct {
+  Node *lhs;
+  Node *rhs;
+} Node_Binop;
+
+typedef struct {
+  Node *first;
+  Node *second;
+  Node *third;
+} Node_Triple;
+
+typedef union {
+  float number;
+  Node_Binop binop; // binary operaton;
+  Node_Triple triple;
+} Node_As;
+
+struct Node {
+  Node_Kind kind;
+  Node_As as;
+};
+
+Node *node_number(float number) {
+  Node *node = arena_alloc(&node_arena, sizeof(Node));
+  node->kind = NK_NUMBER;
+  node->as.number = number;
+  return node;
+}
+Node *node_x(void) {
+  Node *node = arena_alloc(&node_arena, sizeof(Node));
+  node->kind = NK_X;
+  return node;
+}
+
+Node *node_y(void) {
+  Node *node = arena_alloc(&node_arena, sizeof(Node));
+  node->kind = NK_Y;
+  return node;
+}
+
+Node *node_add(Node *lhs, Node *rhs) {
+  Node *node = arena_alloc(&node_arena, sizeof(Node));
+  node->kind = NK_ADD;
+  node->as.binop.lhs = lhs;
+  node->as.binop.rhs = rhs;
+  return node;
+}
+
+Node *node_mult(Node *lhs, Node *rhs) {
+  Node *node = arena_alloc(&node_arena, sizeof(Node));
+  node->kind = NK_MULT;
+  node->as.binop.lhs = lhs;
+  node->as.binop.rhs = rhs;
+  return node;
+}
+
+Node *node_triple(Node *first, Node *second, Node *third) {
+  Node *node = arena_alloc(&node_arena, sizeof(Node));
+  node->kind = NK_TRIPLE;
+  node->as.triple.first = first;
+  node->as.triple.second = second;
+  node->as.triple.third = third;
+  return node;
+}
+
+void node_print(Node *node) {
+  switch (node->kind) {
+  case NK_X:
+    printf("x");
+    break;
+  case NK_Y:
+    printf("y");
+    break;
+  case NK_NUMBER:
+    printf("%f", node->as.number);
+    break;
+  case NK_ADD:
+    printf("(");
+    node_print(node->as.binop.lhs);
+    printf(", ");
+    node_print(node->as.binop.rhs);
+    printf(")");
+    break;
+  case NK_MULT:
+    printf("mult(");
+    node_print(node->as.binop.lhs);
+    printf(", ");
+    node_print(node->as.binop.rhs);
+    printf(")");
+  case NK_TRIPLE:
+    printf("triple(");
+    node_print(node->as.triple.first);
+    printf(", ");
+    node_print(node->as.triple.second);
+    printf(", ");
+    node_print(node->as.triple.third);
+    printf(")");
+    break;
+  }
+}
 
 typedef struct {
   uint8_t r;
@@ -75,6 +184,13 @@ void render_pixels(Color (*f)(float x, float y)) {
 }
 
 int main(void) {
+  printf("\033[1;32m\n------------code Execution starts "
+         "here------------\n\033[0m");
+  Node *node = node_triple(node_x(), node_y(), node_number(0.5));
+  node_print(node);
+  printf("\n");
+  exit(69);
+  // Node *node = arena_alloc(&node_arena, sizeof(Node));
   // render_pixels(grey_gradient);
   render_pixels(cool);
   // render_pixels(justTry);
@@ -87,5 +203,7 @@ int main(void) {
   };
   nob_log(INFO, "Image saved to: %s", output_path);
   printf("Success\n");
+  printf(
+      "\033[1;34m\n------------code Execution ends here------------\n\033[0m");
   return 0;
 }

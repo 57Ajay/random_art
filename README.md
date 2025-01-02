@@ -9,7 +9,7 @@ For understanding of the full implementation visit -> https://www.youtube.com/wa
 - CMake 3.20 or higher
 - C compiler with C23 support
 - MinGW-w64 (for Windows)
-- nob.h (can get Tsoding dailt yt channel)
+- nob.h, arena.h ('nob.h: https://github.com/tsoding/nob.h/blob/main/nob.h', 'Arena.h: https://github.com/tsoding/arena/blob/master/arena.h')
 - stb_image_write.h
 
 ## Building
