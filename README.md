@@ -1,12 +1,16 @@
 # ran-art
 
-A modern C project created with project-generator.
+A Random art generator in c.
+For understanding of the full implementation visit -> https://www.youtube.com/watch?v=3D_h2RE0o0E&list=PPSV
+
 
 ## Requirements
 
 - CMake 3.20 or higher
 - C compiler with C23 support
 - MinGW-w64 (for Windows)
+- nob.h (can get Tsoding dailt yt channel)
+- stb_image_write.h
 
 ## Building
 
@@ -20,10 +24,10 @@ make
 make run
 
 # Debug build
-make debug
+make debug (Not added for now)
 
 # Release build
-make release
+make release (currently not added)
 
 # Clean build files
 make clean
