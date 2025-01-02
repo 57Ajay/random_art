@@ -32,6 +32,25 @@ Color grey_gradient(float x, float y) {
   return (Color){x, x, x};
 }
 
+Color cool(float x, float y) {
+  if (x * y > 0) {
+    return (Color){x, y, 1};
+  } else {
+    float r = fmodf(x + 1e-3, y + 1e-3); // adding 0.001 to avoid division by
+                                         // zero
+    return (Color){r, r, r};
+  }
+}
+
+Color justTry(float x, float y) {
+  if (x * y > 10) {
+    return (Color){x, y, 26};
+  } else {
+    float r = fmodf(x + 1e-3, y + 1e-3);
+    return (Color){r + 1, r, r + 7};
+  }
+}
+
 void render_pixels(Color (*f)(float x, float y)) {
   // inside thew for loop we have to normalize the HEIGHT and WIDTH between -1
   // to 1 but we have current range 0 to Height and 0 to Width;
@@ -56,7 +75,9 @@ void render_pixels(Color (*f)(float x, float y)) {
 }
 
 int main(void) {
-  render_pixels(grey_gradient);
+  // render_pixels(grey_gradient);
+  render_pixels(cool);
+  // render_pixels(justTry);
   const char *output_path = "output.png";
   if (!stbi_write_png(output_path, WIDTH, HEIGHT, 4, pixels,
                       WIDTH * sizeof(RGBA32))) {
@@ -64,6 +85,7 @@ int main(void) {
     nob_log(ERROR, "Could not save Image: %s", output_path);
     return 1;
   };
-  printf("\nSuccess\n");
+  nob_log(INFO, "Image saved to: %s", output_path);
+  printf("Success\n");
   return 0;
 }

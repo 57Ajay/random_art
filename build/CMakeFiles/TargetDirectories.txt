@@ -1,0 +1,3 @@
+C:/projects/cProjects/ran-art/build/CMakeFiles/ran-art.dir
+C:/projects/cProjects/ran-art/build/CMakeFiles/edit_cache.dir
+C:/projects/cProjects/ran-art/build/CMakeFiles/rebuild_cache.dir
