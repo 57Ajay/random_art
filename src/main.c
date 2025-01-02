@@ -37,51 +37,70 @@ typedef union {
 
 struct Node {
   Node_Kind kind;
+  const char *file;
+  int line;
   Node_As as;
 };
 
-Node *node_number(float number) {
+Node *node_loc(const char *file, int line, Node_Kind kind) {
   Node *node = arena_alloc(&node_arena, sizeof(Node));
-  node->kind = NK_NUMBER;
+  node->kind = kind;
+  node->file = file;
+  node->line = line;
+  return node;
+}
+
+Node *node_number_loc(const char *file, int line, float number) {
+  Node *node = node_loc(file, line, NK_NUMBER);
   node->as.number = number;
   return node;
 }
-Node *node_x(void) {
-  Node *node = arena_alloc(&node_arena, sizeof(Node));
-  node->kind = NK_X;
-  return node;
-}
 
-Node *node_y(void) {
-  Node *node = arena_alloc(&node_arena, sizeof(Node));
-  node->kind = NK_Y;
-  return node;
-}
+#define node_number(number) node_number_loc(__FILE__, __LINE__, number)
 
-Node *node_add(Node *lhs, Node *rhs) {
-  Node *node = arena_alloc(&node_arena, sizeof(Node));
-  node->kind = NK_ADD;
+#define node_x() node_loc(__FILE__, __LINE__, NK_X)
+
+// Node *node_x_loc(const char *file, int line) {
+//   return node_loc(file, line, NK_X);
+// }
+
+#define node_y() node_loc(__FILE__, __LINE__, NK_Y)
+
+// Node *node_y(void) {
+//   Node *node = arena_alloc(&node_arena, sizeof(Node));
+//   node->kind = NK_Y;
+//   return node;
+// }
+
+Node *node_add_loc(const char *file, int line, Node *lhs, Node *rhs) {
+  Node *node = node_loc(file, line, NK_ADD);
   node->as.binop.lhs = lhs;
   node->as.binop.rhs = rhs;
   return node;
 }
 
-Node *node_mult(Node *lhs, Node *rhs) {
-  Node *node = arena_alloc(&node_arena, sizeof(Node));
-  node->kind = NK_MULT;
+#define node_add(lhs, rhs) node_add_loc(__FILE__, __LINE__, lhs, rhs)
+
+Node *node_mult_loc(const char *file, int line, Node *lhs, Node *rhs) {
+  Node *node = node_loc(file, line, NK_MULT);
   node->as.binop.lhs = lhs;
   node->as.binop.rhs = rhs;
   return node;
 }
 
-Node *node_triple(Node *first, Node *second, Node *third) {
-  Node *node = arena_alloc(&node_arena, sizeof(Node));
-  node->kind = NK_TRIPLE;
+#define node_mult(lhs, rhs) node_mult_loc(__FILE__, __LINE__, lhs, rhs)
+
+Node *node_triple_loc(const char *file, int line, Node *first, Node *second,
+                      Node *third) {
+  Node *node = node_loc(file, line, NK_TRIPLE);
   node->as.triple.first = first;
   node->as.triple.second = second;
   node->as.triple.third = third;
   return node;
 }
+
+#define node_triple(first, second, third)                                      \
+  node_triple_loc(__FILE__, __LINE__, first, second, third)
 
 void node_print(Node *node) {
   switch (node->kind) {
@@ -108,7 +127,7 @@ void node_print(Node *node) {
     node_print(node->as.binop.rhs);
     printf(")");
   case NK_TRIPLE:
-    printf("triple(");
+    printf("(");
     node_print(node->as.triple.first);
     printf(", ");
     node_print(node->as.triple.second);
@@ -160,6 +179,93 @@ Color justTry(float x, float y) {
   }
 }
 
+bool expect_number(Node *expr) {
+  if (expr->kind != NK_NUMBER) {
+    printf("%s:%d: ERROR: expected number", expr->file, expr->line);
+    return false;
+  };
+  return true;
+}
+
+bool experct_triple(Node *expr) {
+  if (expr->kind != NK_TRIPLE) {
+    printf("%s:%d: ERROR: expected triple", expr->file, expr->line);
+    return false;
+  }
+  return true;
+}
+
+Node *eval(Node *expr, float x, float y) {
+  switch (expr->kind) {
+  case NK_X:
+    return node_number_loc(expr->file, expr->line, x);
+    break;
+  case NK_Y:
+    return node_number_loc(expr->file, expr->line, y);
+    break;
+  case NK_NUMBER:
+    return expr;
+    break;
+  case NK_ADD:
+    Node *lhs = eval(expr->as.binop.lhs, x, y);
+    if (!expect_number(lhs)) {
+      return NULL;
+    }
+    Node *rhs = eval(expr->as.binop.rhs, x, y);
+    if (!expect_number(rhs)) {
+      return NULL;
+    }
+    return node_number_loc(expr->file, expr->line,
+                           lhs->as.number + rhs->as.number);
+    break;
+  case NK_MULT: {
+    Node *lhs = eval(expr->as.binop.lhs, x, y);
+
+    if (!expect_number(lhs)) {
+      return NULL;
+    }
+    Node *rhs = eval(expr->as.binop.rhs, x, y);
+    if (!expect_number(rhs)) {
+      return NULL;
+    }
+    return node_number_loc(expr->file, expr->line,
+                           lhs->as.number * rhs->as.number);
+    break;
+  }
+  case NK_TRIPLE:
+    Node *first = eval(expr->as.triple.first, x, y);
+    Node *second = eval(expr->as.triple.second, x, y);
+    Node *third = eval(expr->as.triple.third, x, y);
+    return node_triple_loc(expr->file, expr->line, first, second, third);
+    break;
+  default:
+    return NULL;
+  }
+}
+
+bool *eval_func(Node *body, float x, float y, Color *c) {
+  Node *result = eval(body, x, y);
+  if (result == NULL) {
+    return (void *)false;
+  }
+  if (!experct_triple(result)) {
+    return (void *)false;
+  }
+  if (!expect_number(result->as.triple.first)) {
+    return (void *)false;
+  }
+  if (!expect_number(result->as.triple.second)) {
+    return (void *)false;
+  }
+  if (!expect_number(result->as.triple.third)) {
+    return (void *)false;
+  }
+  c->r = result->as.triple.first->as.number;
+  c->g = result->as.triple.second->as.number;
+  c->b = result->as.triple.third->as.number;
+  return (void *)true;
+}
+
 void render_pixels(Color (*f)(float x, float y)) {
   // inside thew for loop we have to normalize the HEIGHT and WIDTH between -1
   // to 1 but we have current range 0 to Height and 0 to Width;
@@ -170,6 +276,7 @@ void render_pixels(Color (*f)(float x, float y)) {
       // 0..<WIDTH -> 0..<1 -> 0..<2 -> -1..<1
       float nx = (float)x / WIDTH * 2.0f - 1.0f;
       Color c = f(nx, ny);
+      // Color c = eval_func(f, nx, ny);
       // -1 to 1 -> +1
       // 0 to 2 -> /2
       // 0 to 1 -> *255
@@ -186,7 +293,9 @@ void render_pixels(Color (*f)(float x, float y)) {
 int main(void) {
   printf("\033[1;32m\n------------code Execution starts "
          "here------------\n\033[0m");
-  Node *node = node_triple(node_x(), node_y(), node_number(0.5));
+  // Node *node = node_triple(node_x(), node_y(), node_number(0.5));
+  Node *node =
+      node_triple(node_add(node_x(), node_y()), node_y(), node_number(0.5));
   node_print(node);
   printf("\n");
   exit(69);
@@ -203,7 +312,7 @@ int main(void) {
   };
   nob_log(INFO, "Image saved to: %s", output_path);
   printf("Success\n");
-  printf(
-      "\033[1;34m\n------------code Execution ends here------------\n\033[0m");
+  printf("\033[1;34m\n------------code Execution ends "
+         "here------------\n\033[0m");
   return 0;
 }
